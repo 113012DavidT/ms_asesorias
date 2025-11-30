@@ -1,0 +1,28 @@
+server:
+  port: 8086
+
+spring:
+  application:
+    name: ms-alumnos
+
+  datasource:
+    url: jdbc:h2:mem:alumnos_db
+    driverClassName: org.h2.Driver
+    username: sa
+    password:
+
+  jpa:
+    hibernate:
+      ddl-auto: update
+    show-sql: false
+
+  main:
+    allow-bean-definition-overriding: true
+
+eureka:
+  client:
+    service-url:
+      defaultZone: http://eureka-server:8761/eureka/
+    enabled: true
+  instance:
+    prefer-ip-address: true

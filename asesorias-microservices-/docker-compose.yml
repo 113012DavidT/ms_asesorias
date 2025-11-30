@@ -1,0 +1,141 @@
+version: '3.8'
+
+services:
+  eureka-server:
+    build:
+      context: ./eureka-server
+      dockerfile: Dockerfile
+    container_name: eureka-server
+    ports:
+      - "8761:8761"
+    environment:
+      EUREKA_INSTANCE_HOSTNAME: eureka-server
+      EUREKA_CLIENT_REGISTER_WITH_EUREKA: "false"
+      EUREKA_CLIENT_FETCH_REGISTRY: "false"
+    networks:
+      - asesorias-network
+
+  ms-auth:
+    build:
+      context: ./ms-auth
+      dockerfile: Dockerfile
+    container_name: ms-auth
+    ports:
+      - "8088:8088"
+    depends_on:
+      - eureka-server
+    environment:
+      EUREKA_CLIENT_SERVICE_URL_DEFAULT_ZONE: http://eureka-server:8761/eureka/
+      SPRING_APPLICATION_NAME: ms-auth
+      APP_JWT_SECRET: my_super_secret_key_for_jwt_tokens_development_only_change_in_production_123456789
+    networks:
+      - asesorias-network
+
+  api-gateway:
+    build:
+      context: ./api-gateway
+      dockerfile: Dockerfile
+    container_name: api-gateway
+    ports:
+      - "8000:8000"
+    depends_on:
+      - eureka-server
+    environment:
+      EUREKA_CLIENT_SERVICE_URL_DEFAULT_ZONE: http://eureka-server:8761/eureka/
+      SPRING_APPLICATION_NAME: api-gateway
+    networks:
+      - asesorias-network
+
+  ms-admin:
+    build:
+      context: ./ms-admin
+      dockerfile: Dockerfile
+    container_name: ms-admin
+    ports:
+      - "8091:8091"
+    depends_on:
+      - eureka-server
+    environment:
+      EUREKA_CLIENT_SERVICE_URL_DEFAULT_ZONE: http://eureka-server:8761/eureka/
+      SPRING_APPLICATION_NAME: ms-admin
+    networks:
+      - asesorias-network
+
+  ms-asesorias:
+    build:
+      context: ./ms-asesorias
+      dockerfile: Dockerfile
+    container_name: ms-asesorias
+    ports:
+      - "8082:8082"
+    depends_on:
+      - eureka-server
+    environment:
+      EUREKA_CLIENT_SERVICE_URL_DEFAULT_ZONE: http://eureka-server:8761/eureka/
+      SPRING_APPLICATION_NAME: ms-asesorias
+    networks:
+      - asesorias-network
+
+  ms-coordinadores:
+    build:
+      context: ./ms-coordinadores
+      dockerfile: Dockerfile
+    container_name: ms-coordinadores
+    ports:
+      - "8083:8083"
+    depends_on:
+      - eureka-server
+    environment:
+      EUREKA_CLIENT_SERVICE_URL_DEFAULT_ZONE: http://eureka-server:8761/eureka/
+      SPRING_APPLICATION_NAME: ms-coordinadores
+    networks:
+      - asesorias-network
+
+  ms-divisiones:
+    build:
+      context: ./ms-divisiones
+      dockerfile: Dockerfile
+    container_name: ms-divisiones
+    ports:
+      - "8084:8084"
+    depends_on:
+      - eureka-server
+    environment:
+      EUREKA_CLIENT_SERVICE_URL_DEFAULT_ZONE: http://eureka-server:8761/eureka/
+      SPRING_APPLICATION_NAME: ms-divisiones
+    networks:
+      - asesorias-network
+
+  ms-profesores:
+    build:
+      context: ./ms-profesores
+      dockerfile: Dockerfile
+    container_name: ms-profesores
+    ports:
+      - "8085:8085"
+    depends_on:
+      - eureka-server
+    environment:
+      EUREKA_CLIENT_SERVICE_URL_DEFAULT_ZONE: http://eureka-server:8761/eureka/
+      SPRING_APPLICATION_NAME: ms-profesores
+    networks:
+      - asesorias-network
+
+  ms-alumnos:
+    build:
+      context: ./ms-alumnos
+      dockerfile: Dockerfile
+    container_name: ms-alumnos
+    ports:
+      - "8086:8086"
+    depends_on:
+      - eureka-server
+    environment:
+      EUREKA_CLIENT_SERVICE_URL_DEFAULT_ZONE: http://eureka-server:8761/eureka/
+      SPRING_APPLICATION_NAME: ms-alumnos
+    networks:
+      - asesorias-network
+
+networks:
+  asesorias-network:
+    driver: bridge

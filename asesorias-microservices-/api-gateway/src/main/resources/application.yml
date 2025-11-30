@@ -1,0 +1,100 @@
+server:
+  port: 8000
+
+spring:
+  application:
+    name: api-gateway
+
+  cloud:
+    discovery:
+      enabled: true
+    gateway:
+      default-filters:
+        - DedupeResponseHeader=Access-Control-Allow-Origin Access-Control-Allow-Credentials RETAIN_FIRST
+      # 🌍 Configuración Global de CORS (para permitir peticiones desde el frontend)
+      globalcors:
+        add-to-simple-url-handler-mapping: true
+        corsConfigurations:
+          '[/**]':
+            allowedOrigins:
+              - "http://localhost:5173"
+              - "http://localhost:5174"
+              - "http://localhost:5175"
+              - "http://127.0.0.1:5173"
+              - "http://127.0.0.1:5174"
+              - "http://127.0.0.1:5175"
+            allowedMethods:
+              - "GET"
+              - "POST"
+              - "PUT"
+              - "DELETE"
+              - "OPTIONS"
+            allowedHeaders: "*"
+            allowCredentials: true
+
+      # 🚏 Rutas hacia los microservicios registrados en Eureka
+      routes:
+        # 🔹 AUTENTICACIÓN
+        - id: ms-auth
+          uri: lb://ms-auth
+          predicates:
+            - Path=/api/auth/**
+          filters:
+            - StripPrefix=0
+
+        # 🔹 ADMIN
+        - id: ms-admin
+          uri: lb://ms-admin
+          predicates:
+            - Path=/api/admin/**,/usuarios/**,/roles/**,/divisiones/**,/programas/**,/coordinador-perfiles/**,/profesor-perfiles/**,/alumno-perfiles/**,/grupos/**
+          filters:
+            - StripPrefix=0
+
+        # 🔹 DIVISIONES Y PROGRAMAS EDUCATIVOS
+        - id: ms-divisiones
+          uri: lb://ms-divisiones
+          predicates:
+            - Path=/api/divisiones/**,/api/programas/**
+          filters:
+            - StripPrefix=0
+
+        # 🔹 ASESORÍAS Y DISPONIBILIDADES
+        - id: ms-asesorias
+          uri: lb://ms-asesorias
+          predicates:
+            - Path=/api/asesorias/**,/api/disponibilidades/**
+          filters:
+            - StripPrefix=0
+
+        # 🔹 PROFESORES
+        - id: ms-profesores
+          uri: lb://ms-profesores
+          predicates:
+            - Path=/api/profesores/**
+          filters:
+            - StripPrefix=0
+
+        # 🔹 ALUMNOS
+        - id: ms-alumnos
+          uri: lb://ms-alumnos
+          predicates:
+            - Path=/api/alumnos/**
+          filters:
+            - StripPrefix=0
+
+        # 🔹 COORDINADORES
+        - id: ms-coordinadores
+          uri: lb://ms-coordinadores
+          predicates:
+            - Path=/api/coordinadores/**
+          filters:
+            - StripPrefix=0
+
+# ⚙️ Configuración de Eureka
+eureka:
+  client:
+    service-url:
+      defaultZone: http://eureka-server:8761/eureka/
+    enabled: true
+
+

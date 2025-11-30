@@ -1,0 +1,32 @@
+server:
+  port: 8088
+
+spring:
+  application:
+    name: ms-auth
+
+  cloud:
+    discovery:
+      enabled: true
+
+eureka:
+  client:
+    service-url:
+      defaultZone: http://eureka-server:8761/eureka/
+    enabled: true
+  instance:
+    prefer-ip-address: true
+    instance-id: ${spring.application.name}:${server.port}
+
+app:
+  jwt:
+    secret: my_super_secret_key_for_jwt_tokens_development_only_change_in_production_123456789
+    expiration: 86400000  # 24 horas en milisegundos
+    refresh-expiration: 604800000  # 7 días en milisegundos
+
+logging:
+  level:
+    root: INFO
+    com.uteq: DEBUG
+
+

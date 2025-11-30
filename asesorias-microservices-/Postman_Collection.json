@@ -1,0 +1,977 @@
+{
+  "info": {
+    "_postman_id": "asesorias-microservices",
+    "name": "Sistema de Asesorías - Microservicios",
+    "description": "Colección completa de endpoints para probar el sistema de asesorías",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+    "item": [
+      {
+        "name": "🔐 AUTENTICACIÓN",
+        "item": [
+          {
+            "name": "Login - ADMIN",
+            "request": {
+              "method": "POST",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": {
+                "mode": "raw",
+                "raw": "{\n  \"correoMatricula\": \"admin@uteq.edu\",\n  \"password\": \"admin123\"\n}"
+              },
+              "url": {
+                "raw": "http://localhost:8000/auth/login",
+                "protocol": "http",
+                "host": ["localhost"],
+                "port": "8000",
+                "path": ["auth", "login"]
+              }
+            }
+          },
+          {
+            "name": "Login - PROFESOR",
+            "request": {
+              "method": "POST",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": {
+                "mode": "raw",
+                "raw": "{\n  \"correoMatricula\": \"profesor1@uteq.edu\",\n  \"password\": \"pass123\"\n}"
+              },
+              "url": {
+                "raw": "http://localhost:8000/auth/login",
+                "protocol": "http",
+                "host": ["localhost"],
+                "port": "8000",
+                "path": ["auth", "login"]
+              }
+            }
+          },
+          {
+            "name": "Login - ALUMNO",
+            "request": {
+              "method": "POST",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": {
+                "mode": "raw",
+                "raw": "{\n  \"correoMatricula\": \"alumno1@uteq.edu\",\n  \"password\": \"pass123\"\n}"
+              },
+              "url": {
+                "raw": "http://localhost:8000/auth/login",
+                "protocol": "http",
+                "host": ["localhost"],
+                "port": "8000",
+                "path": ["auth", "login"]
+              }
+            }
+          },
+          {
+            "name": "Login - COORDINADOR",
+            "request": {
+              "method": "POST",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": {
+                "mode": "raw",
+                "raw": "{\n  \"correoMatricula\": \"coordinador1@uteq.edu\",\n  \"password\": \"pass123\"\n}"
+              },
+              "url": {
+                "raw": "http://localhost:8000/auth/login",
+                "protocol": "http",
+                "host": ["localhost"],
+                "port": "8000",
+                "path": ["auth", "login"]
+              }
+            }
+          }
+        ]
+      },
+      {
+        "name": "👥 USUARIOS (MS-ADMIN)",
+        "item": [
+          {
+            "name": "Listar usuarios",
+            "request": {
+              "method": "GET",
+              "header": [
+                {
+                  "key": "Authorization",
+                  "value": "Bearer {{token}}"
+                }
+              ],
+              "url": {
+                "raw": "http://localhost:8000/usuarios",
+                "protocol": "http",
+                "host": ["localhost"],
+                "port": "8000",
+                "path": ["usuarios"]
+              }
+            }
+          },
+          {
+            "name": "Obtener usuario por ID",
+            "request": {
+              "method": "GET",
+              "header": [
+                {
+                  "key": "Authorization",
+                  "value": "Bearer {{token}}"
+                }
+              ],
+              "url": {
+                "raw": "http://localhost:8000/usuarios/1",
+                "protocol": "http",
+                "host": ["localhost"],
+                "port": "8000",
+                "path": ["usuarios", "1"]
+              }
+            }
+          },
+          {
+            "name": "Crear usuario",
+            "request": {
+              "method": "POST",
+              "header": [
+                {
+                  "key": "Authorization",
+                  "value": "Bearer {{token}}"
+                },
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": {
+                "mode": "raw",
+                "raw": "{\n  \"correoMatricula\": \"nuevousuario@uteq.edu\",\n  \"password\": \"pass123\",\n  \"nombre\": \"Carlos\",\n  \"apellido\": \"López\",\n  \"activo\": true,\n  \"rolId\": 3\n}"
+              },
+              "url": {
+                "raw": "http://localhost:8000/usuarios",
+                "protocol": "http",
+                "host": ["localhost"],
+                "port": "8000",
+                "path": ["usuarios"]
+              }
+            }
+          },
+          {
+            "name": "Actualizar usuario",
+            "request": {
+              "method": "PUT",
+              "header": [
+                {
+                  "key": "Authorization",
+                  "value": "Bearer {{token}}"
+                },
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": {
+                "mode": "raw",
+                "raw": "{\n  \"nombre\": \"Carlos Actualizado\",\n  \"apellido\": \"López García\",\n  \"activo\": true\n}"
+              },
+              "url": {
+                "raw": "http://localhost:8000/usuarios/1",
+                "protocol": "http",
+                "host": ["localhost"],
+                "port": "8000",
+                "path": ["usuarios", "1"]
+              }
+            }
+          },
+          {
+            "name": "Eliminar usuario",
+            "request": {
+              "method": "DELETE",
+              "header": [
+                {
+                  "key": "Authorization",
+                  "value": "Bearer {{token}}"
+                }
+              ],
+              "url": {
+                "raw": "http://localhost:8000/usuarios/1",
+                "protocol": "http",
+                "host": ["localhost"],
+                "port": "8000",
+                "path": ["usuarios", "1"]
+              }
+            }
+          }
+        ]
+      },
+      {
+        "name": "📚 ROLES",
+        "item": [
+          {
+            "name": "Listar roles",
+            "request": {
+              "method": "GET",
+              "header": [
+                {
+                  "key": "Authorization",
+                  "value": "Bearer {{token}}"
+                }
+              ],
+              "url": {
+                "raw": "http://localhost:8000/roles",
+                "protocol": "http",
+                "host": ["localhost"],
+                "port": "8000",
+                "path": ["roles"]
+              }
+            }
+          },
+          {
+            "name": "Obtener rol por ID",
+            "request": {
+              "method": "GET",
+              "header": [
+                {
+                  "key": "Authorization",
+                  "value": "Bearer {{token}}"
+                }
+              ],
+              "url": {
+                "raw": "http://localhost:8000/roles/1",
+                "protocol": "http",
+                "host": ["localhost"],
+                "port": "8000",
+                "path": ["roles", "1"]
+              }
+            }
+          }
+        ]
+      },
+      {
+        "name": "🏫 DIVISIONES",
+        "item": [
+          {
+            "name": "Listar divisiones",
+            "request": {
+              "method": "GET",
+              "header": [
+                {
+                  "key": "Authorization",
+                  "value": "Bearer {{token}}"
+                }
+              ],
+              "url": {
+                "raw": "http://localhost:8000/divisiones",
+                "protocol": "http",
+                "host": ["localhost"],
+                "port": "8000",
+                "path": ["divisiones"]
+              }
+            }
+          },
+          {
+            "name": "Obtener división por ID",
+            "request": {
+              "method": "GET",
+              "header": [
+                {
+                  "key": "Authorization",
+                  "value": "Bearer {{token}}"
+                }
+              ],
+              "url": {
+                "raw": "http://localhost:8000/divisiones/1",
+                "protocol": "http",
+                "host": ["localhost"],
+                "port": "8000",
+                "path": ["divisiones", "1"]
+              }
+            }
+          },
+          {
+            "name": "Crear división",
+            "request": {
+              "method": "POST",
+              "header": [
+                {
+                  "key": "Authorization",
+                  "value": "Bearer {{token}}"
+                },
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": {
+                "mode": "raw",
+                "raw": "{\n  \"nombre\": \"3ro A\",\n  \"descripcion\": \"Tercer año paralela A\",\n  \"activo\": true\n}"
+              },
+              "url": {
+                "raw": "http://localhost:8000/divisiones",
+                "protocol": "http",
+                "host": ["localhost"],
+                "port": "8000",
+                "path": ["divisiones"]
+              }
+            }
+          },
+          {
+            "name": "Actualizar división",
+            "request": {
+              "method": "PUT",
+              "header": [
+                {
+                  "key": "Authorization",
+                  "value": "Bearer {{token}}"
+                },
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": {
+                "mode": "raw",
+                "raw": "{\n  \"nombre\": \"3ro A Actualizado\",\n  \"descripcion\": \"Descripción actualizada\",\n  \"activo\": true\n}"
+              },
+              "url": {
+                "raw": "http://localhost:8000/divisiones/1",
+                "protocol": "http",
+                "host": ["localhost"],
+                "port": "8000",
+                "path": ["divisiones", "1"]
+              }
+            }
+          },
+          {
+            "name": "Eliminar división",
+            "request": {
+              "method": "DELETE",
+              "header": [
+                {
+                  "key": "Authorization",
+                  "value": "Bearer {{token}}"
+                }
+              ],
+              "url": {
+                "raw": "http://localhost:8000/divisiones/1",
+                "protocol": "http",
+                "host": ["localhost"],
+                "port": "8000",
+                "path": ["divisiones", "1"]
+              }
+            }
+          }
+        ]
+      },
+      {
+        "name": "🎓 PROGRAMAS",
+        "item": [
+          {
+            "name": "Listar programas",
+            "request": {
+              "method": "GET",
+              "header": [
+                {
+                  "key": "Authorization",
+                  "value": "Bearer {{token}}"
+                }
+              ],
+              "url": {
+                "raw": "http://localhost:8000/programas",
+                "protocol": "http",
+                "host": ["localhost"],
+                "port": "8000",
+                "path": ["programas"]
+              }
+            }
+          },
+          {
+            "name": "Obtener programa por ID",
+            "request": {
+              "method": "GET",
+              "header": [
+                {
+                  "key": "Authorization",
+                  "value": "Bearer {{token}}"
+                }
+              ],
+              "url": {
+                "raw": "http://localhost:8000/programas/1",
+                "protocol": "http",
+                "host": ["localhost"],
+                "port": "8000",
+                "path": ["programas", "1"]
+              }
+            }
+          },
+          {
+            "name": "Crear programa",
+            "request": {
+              "method": "POST",
+              "header": [
+                {
+                  "key": "Authorization",
+                  "value": "Bearer {{token}}"
+                },
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": {
+                "mode": "raw",
+                "raw": "{\n  \"nombre\": \"Derecho\",\n  \"descripcion\": \"Carrera de Derecho de 4 años\",\n  \"activo\": true\n}"
+              },
+              "url": {
+                "raw": "http://localhost:8000/programas",
+                "protocol": "http",
+                "host": ["localhost"],
+                "port": "8000",
+                "path": ["programas"]
+              }
+            }
+          }
+        ]
+      },
+      {
+        "name": "👨‍🏫 PROFESORES",
+        "item": [
+          {
+            "name": "Listar profesores",
+            "request": {
+              "method": "GET",
+              "header": [
+                {
+                  "key": "Authorization",
+                  "value": "Bearer {{token}}"
+                }
+              ],
+              "url": {
+                "raw": "http://localhost:8000/profesores",
+                "protocol": "http",
+                "host": ["localhost"],
+                "port": "8000",
+                "path": ["profesores"]
+              }
+            }
+          },
+          {
+            "name": "Obtener profesor por ID",
+            "request": {
+              "method": "GET",
+              "header": [
+                {
+                  "key": "Authorization",
+                  "value": "Bearer {{token}}"
+                }
+              ],
+              "url": {
+                "raw": "http://localhost:8000/profesores/1",
+                "protocol": "http",
+                "host": ["localhost"],
+                "port": "8000",
+                "path": ["profesores", "1"]
+              }
+            }
+          },
+          {
+            "name": "Profesores por división",
+            "request": {
+              "method": "GET",
+              "header": [
+                {
+                  "key": "Authorization",
+                  "value": "Bearer {{token}}"
+                }
+              ],
+              "url": {
+                "raw": "http://localhost:8000/profesores/division/1",
+                "protocol": "http",
+                "host": ["localhost"],
+                "port": "8000",
+                "path": ["profesores", "division", "1"]
+              }
+            }
+          },
+          {
+            "name": "Profesores por programa",
+            "request": {
+              "method": "GET",
+              "header": [
+                {
+                  "key": "Authorization",
+                  "value": "Bearer {{token}}"
+                }
+              ],
+              "url": {
+                "raw": "http://localhost:8000/profesores/programa/1",
+                "protocol": "http",
+                "host": ["localhost"],
+                "port": "8000",
+                "path": ["profesores", "programa", "1"]
+              }
+            }
+          }
+        ]
+      },
+      {
+        "name": "👨‍🎓 ALUMNOS",
+        "item": [
+          {
+            "name": "Listar alumnos",
+            "request": {
+              "method": "GET",
+              "header": [
+                {
+                  "key": "Authorization",
+                  "value": "Bearer {{token}}"
+                }
+              ],
+              "url": {
+                "raw": "http://localhost:8000/alumnos",
+                "protocol": "http",
+                "host": ["localhost"],
+                "port": "8000",
+                "path": ["alumnos"]
+              }
+            }
+          },
+          {
+            "name": "Obtener alumno por ID",
+            "request": {
+              "method": "GET",
+              "header": [
+                {
+                  "key": "Authorization",
+                  "value": "Bearer {{token}}"
+                }
+              ],
+              "url": {
+                "raw": "http://localhost:8000/alumnos/1",
+                "protocol": "http",
+                "host": ["localhost"],
+                "port": "8000",
+                "path": ["alumnos", "1"]
+              }
+            }
+          },
+          {
+            "name": "Alumnos por división",
+            "request": {
+              "method": "GET",
+              "header": [
+                {
+                  "key": "Authorization",
+                  "value": "Bearer {{token}}"
+                }
+              ],
+              "url": {
+                "raw": "http://localhost:8000/alumnos/division/1",
+                "protocol": "http",
+                "host": ["localhost"],
+                "port": "8000",
+                "path": ["alumnos", "division", "1"]
+              }
+            }
+          },
+          {
+            "name": "Alumnos por programa",
+            "request": {
+              "method": "GET",
+              "header": [
+                {
+                  "key": "Authorization",
+                  "value": "Bearer {{token}}"
+                }
+              ],
+              "url": {
+                "raw": "http://localhost:8000/alumnos/programa/1",
+                "protocol": "http",
+                "host": ["localhost"],
+                "port": "8000",
+                "path": ["alumnos", "programa", "1"]
+              }
+            }
+          },
+          {
+            "name": "Actualizar promedio",
+            "request": {
+              "method": "PATCH",
+              "header": [
+                {
+                  "key": "Authorization",
+                  "value": "Bearer {{token}}"
+                },
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": {
+                "mode": "raw",
+                "raw": "{\n  \"promedio\": 9.5\n}"
+              },
+              "url": {
+                "raw": "http://localhost:8000/alumnos/1/promedio",
+                "protocol": "http",
+                "host": ["localhost"],
+                "port": "8000",
+                "path": ["alumnos", "1", "promedio"]
+              }
+            }
+          }
+        ]
+      },
+      {
+        "name": "👨‍💼 COORDINADORES",
+        "item": [
+          {
+            "name": "Listar coordinadores",
+            "request": {
+              "method": "GET",
+              "header": [
+                {
+                  "key": "Authorization",
+                  "value": "Bearer {{token}}"
+                }
+              ],
+              "url": {
+                "raw": "http://localhost:8000/coordinadores",
+                "protocol": "http",
+                "host": ["localhost"],
+                "port": "8000",
+                "path": ["coordinadores"]
+              }
+            }
+          },
+          {
+            "name": "Obtener coordinador por ID",
+            "request": {
+              "method": "GET",
+              "header": [
+                {
+                  "key": "Authorization",
+                  "value": "Bearer {{token}}"
+                }
+              ],
+              "url": {
+                "raw": "http://localhost:8000/coordinadores/1",
+                "protocol": "http",
+                "host": ["localhost"],
+                "port": "8000",
+                "path": ["coordinadores", "1"]
+              }
+            }
+          },
+          {
+            "name": "Coordinadores por división",
+            "request": {
+              "method": "GET",
+              "header": [
+                {
+                  "key": "Authorization",
+                  "value": "Bearer {{token}}"
+                }
+              ],
+              "url": {
+                "raw": "http://localhost:8000/coordinadores/division/1",
+                "protocol": "http",
+                "host": ["localhost"],
+                "port": "8000",
+                "path": ["coordinadores", "division", "1"]
+              }
+            }
+          }
+        ]
+      },
+      {
+        "name": "📋 ASESORÍAS",
+        "item": [
+          {
+            "name": "Listar asesorías",
+            "request": {
+              "method": "GET",
+              "header": [
+                {
+                  "key": "Authorization",
+                  "value": "Bearer {{token}}"
+                }
+              ],
+              "url": {
+                "raw": "http://localhost:8000/asesorias",
+                "protocol": "http",
+                "host": ["localhost"],
+                "port": "8000",
+                "path": ["asesorias"]
+              }
+            }
+          },
+          {
+            "name": "Obtener asesoría por ID",
+            "request": {
+              "method": "GET",
+              "header": [
+                {
+                  "key": "Authorization",
+                  "value": "Bearer {{token}}"
+                }
+              ],
+              "url": {
+                "raw": "http://localhost:8000/asesorias/1",
+                "protocol": "http",
+                "host": ["localhost"],
+                "port": "8000",
+                "path": ["asesorias", "1"]
+              }
+            }
+          },
+          {
+            "name": "Crear asesoría",
+            "request": {
+              "method": "POST",
+              "header": [
+                {
+                  "key": "Authorization",
+                  "value": "Bearer {{token}}"
+                },
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": {
+                "mode": "raw",
+                "raw": "{\n  \"titulo\": \"Asesoría de Programación\",\n  \"descripcion\": \"Tutoría de Java Avanzado\",\n  \"profesorId\": 1,\n  \"alumnoId\": 1,\n  \"grupoId\": 1,\n  \"fecha\": \"2025-12-01\",\n  \"horaInicio\": \"14:00\",\n  \"horaFin\": \"15:00\"\n}"
+              },
+              "url": {
+                "raw": "http://localhost:8000/asesorias",
+                "protocol": "http",
+                "host": ["localhost"],
+                "port": "8000",
+                "path": ["asesorias"]
+              }
+            }
+          },
+          {
+            "name": "Actualizar asesoría",
+            "request": {
+              "method": "PUT",
+              "header": [
+                {
+                  "key": "Authorization",
+                  "value": "Bearer {{token}}"
+                },
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": {
+                "mode": "raw",
+                "raw": "{\n  \"estado\": \"COMPLETADA\"\n}"
+              },
+              "url": {
+                "raw": "http://localhost:8000/asesorias/1",
+                "protocol": "http",
+                "host": ["localhost"],
+                "port": "8000",
+                "path": ["asesorias", "1"]
+              }
+            }
+          },
+          {
+            "name": "Asesorías por profesor",
+            "request": {
+              "method": "GET",
+              "header": [
+                {
+                  "key": "Authorization",
+                  "value": "Bearer {{token}}"
+                }
+              ],
+              "url": {
+                "raw": "http://localhost:8000/asesorias/profesor/1",
+                "protocol": "http",
+                "host": ["localhost"],
+                "port": "8000",
+                "path": ["asesorias", "profesor", "1"]
+              }
+            }
+          },
+          {
+            "name": "Asesorías por alumno",
+            "request": {
+              "method": "GET",
+              "header": [
+                {
+                  "key": "Authorization",
+                  "value": "Bearer {{token}}"
+                }
+              ],
+              "url": {
+                "raw": "http://localhost:8000/asesorias/alumno/1",
+                "protocol": "http",
+                "host": ["localhost"],
+                "port": "8000",
+                "path": ["asesorias", "alumno", "1"]
+              }
+            }
+          }
+        ]
+      },
+      {
+        "name": "📊 GRUPOS",
+        "item": [
+          {
+            "name": "Listar grupos",
+            "request": {
+              "method": "GET",
+              "header": [
+                {
+                  "key": "Authorization",
+                  "value": "Bearer {{token}}"
+                }
+              ],
+              "url": {
+                "raw": "http://localhost:8000/grupos",
+                "protocol": "http",
+                "host": ["localhost"],
+                "port": "8000",
+                "path": ["grupos"]
+              }
+            }
+          },
+          {
+            "name": "Obtener grupo por ID",
+            "request": {
+              "method": "GET",
+              "header": [
+                {
+                  "key": "Authorization",
+                  "value": "Bearer {{token}}"
+                }
+              ],
+              "url": {
+                "raw": "http://localhost:8000/grupos/1",
+                "protocol": "http",
+                "host": ["localhost"],
+                "port": "8000",
+                "path": ["grupos", "1"]
+              }
+            }
+          },
+          {
+            "name": "Crear grupo",
+            "request": {
+              "method": "POST",
+              "header": [
+                {
+                  "key": "Authorization",
+                  "value": "Bearer {{token}}"
+                },
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": {
+                "mode": "raw",
+                "raw": "{\n  \"nombre\": \"Grupo 5 - Cálculo\",\n  \"descripcion\": \"Grupo de tutoría de Cálculo II\",\n  \"profesorId\": 1,\n  \"divisionId\": 2,\n  \"programaId\": 1,\n  \"activo\": true\n}"
+              },
+              "url": {
+                "raw": "http://localhost:8000/grupos",
+                "protocol": "http",
+                "host": ["localhost"],
+                "port": "8000",
+                "path": ["grupos"]
+              }
+            }
+          }
+        ]
+      },
+      {
+        "name": "🔗 PERFILES",
+        "item": [
+          {
+            "name": "Listar perfiles coordinador",
+            "request": {
+              "method": "GET",
+              "header": [
+                {
+                  "key": "Authorization",
+                  "value": "Bearer {{token}}"
+                }
+              ],
+              "url": {
+                "raw": "http://localhost:8000/coordinador-perfiles",
+                "protocol": "http",
+                "host": ["localhost"],
+                "port": "8000",
+                "path": ["coordinador-perfiles"]
+              }
+            }
+          },
+          {
+            "name": "Listar perfiles profesor",
+            "request": {
+              "method": "GET",
+              "header": [
+                {
+                  "key": "Authorization",
+                  "value": "Bearer {{token}}"
+                }
+              ],
+              "url": {
+                "raw": "http://localhost:8000/profesor-perfiles",
+                "protocol": "http",
+                "host": ["localhost"],
+                "port": "8000",
+                "path": ["profesor-perfiles"]
+              }
+            }
+          },
+          {
+            "name": "Listar perfiles alumno",
+            "request": {
+              "method": "GET",
+              "header": [
+                {
+                  "key": "Authorization",
+                  "value": "Bearer {{token}}"
+                }
+              ],
+              "url": {
+                "raw": "http://localhost:8000/alumno-perfiles",
+                "protocol": "http",
+                "host": ["localhost"],
+                "port": "8000",
+                "path": ["alumno-perfiles"]
+              }
+            }
+          }
+        ]
+      }
+    ],
+    "variable": [
+      {
+        "key": "token",
+        "value": "",
+        "type": "string"
+      }
+    ]
+  }
+}
