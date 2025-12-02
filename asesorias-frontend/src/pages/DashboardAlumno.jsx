@@ -16,8 +16,8 @@ export default function DashboardAlumno() {
   const [selectedProfesor, setSelectedProfesor] = useState(null);
 
   const asesoriasAPI = useFetch('/api/asesorias');
+  const asesoriasProfesorAPI = useFetch('/api/asesorias/profesor');
   const profesoresAPI = useFetch('/api/profesores');
-  const gruposAPI = useFetch('/api/grupos');
 
   const [formData, setFormData] = useState({
     solicitud: {}
@@ -31,9 +31,10 @@ export default function DashboardAlumno() {
     try {
       if (activeTab === 'disponibles') {
         await profesoresAPI.get();
-        await gruposAPI.get();
       } else {
-        await asesoriasAPI.get();
+        if (user?.usuarioId) {
+          await asesoriasAPI.get(`/alumno/${user.usuarioId}`);
+        }
       }
     } catch (error) {
       Swal.fire('Error', 'No se pudieron cargar los datos', 'error');
@@ -43,18 +44,26 @@ export default function DashboardAlumno() {
   const handleSolicitarAsesoria = async (e) => {
     e.preventDefault();
     try {
-      await asesoriasAPI.post({
-        ...formData.solicitud,
-        alumnoId: user?.id,
-        profesorId: selectedProfesor?.id,
-        estado: 'PENDIENTE'
+      await asesoriasProfesorAPI.post({
+        profesorId: selectedProfesor?.usuarioId,
+        alumnoId: user?.usuarioId,
+        fecha: formData.solicitud?.fecha,
+        horaInicio: formData.solicitud?.horaInicio,
+        horaFin: formData.solicitud?.horaFin,
+        titulo: formData.solicitud?.titulo,
+        materia: formData.solicitud?.titulo,
+        observaciones: formData.solicitud?.descripcion
       });
       Swal.fire('Éxito', 'Solicitud de asesoría enviada', 'success');
       setShowModal(false);
       setFormData({ solicitud: {} });
-      await asesoriasAPI.get();
+      // Refrescar historial del alumno explícitamente
+      if (user?.usuarioId) {
+        await asesoriasAPI.get(`/alumno/${user.usuarioId}`);
+      }
     } catch (error) {
-      Swal.fire('Error', 'No se pudo enviar la solicitud', 'error');
+      const msg = error?.response?.data?.error || 'No se pudo enviar la solicitud';
+      Swal.fire('Error', msg, 'error');
     }
   };
 
@@ -95,23 +104,38 @@ export default function DashboardAlumno() {
         {/* PROFESORES DISPONIBLES */}
         {activeTab === 'disponibles' && (
           <>
+            {profesoresAPI.loading && (
+              <div className="text-center text-muted p-4">Cargando profesores…</div>
+            )}
+            {!profesoresAPI.loading && Array.isArray(profesoresAPI.data) && profesoresAPI.data.length === 0 && (
+              <Card title="No hay profesores disponibles">
+                <p className="mb-2">Aún no hay profesores asignados a tu programa.</p>
+                <div className="d-flex gap-2">
+                  <button className="btn btn-outline-primary btn-sm" onClick={() => profesoresAPI.get()}>
+                    Recargar
+                  </button>
+                </div>
+              </Card>
+            )}
             <div className="dashboard-grid">
               {(profesoresAPI.data || []).map((profesor) => (
                 <Card
                   key={profesor.id}
-                  title={`${profesor.nombre} ${profesor.apellido}`}
+                  title={`${profesor.nombre || ''}`}
                   className="clickable"
                 >
                   <div className="profesor-card-content">
-                    <p>
-                      <strong>Especialidad:</strong> {profesor.especialidad || 'No especificada'}
-                    </p>
-                    <p>
-                      <strong>Teléfono:</strong> {profesor.telefonoContacto || 'No disponible'}
-                    </p>
-                    <p>
-                      <strong>Email:</strong> {profesor.correoAlternativo || 'No disponible'}
-                    </p>
+                    <div className="row g-2 mb-2">
+                      <div className="col-6">
+                        <small className="text-muted">Especialidad</small>
+                        <div>{profesor.especialidad || 'No especificada'}</div>
+                      </div>
+                      <div className="col-6">
+                        <small className="text-muted">Email</small>
+                        <div>{profesor.correoMatricula || 'No disponible'}</div>
+                      </div>
+                    </div>
+                    <p className="mb-0"><small className="text-muted">Selecciona para solicitar una asesoría</small></p>
                     <button
                       className="btn btn-primary btn-sm w-100 mt-3"
                       onClick={() => {
@@ -135,9 +159,12 @@ export default function DashboardAlumno() {
               headers={['titulo', 'fecha', 'horaInicio', 'horaFin', 'estado']}
               rows={(asesoriasAPI.data || []).map((a) => ({
                 ...a,
+                titulo: a.titulo || a.materia || '',
+                horaInicio: a.horaInicio || a.hora || '',
+                horaFin: a.horaFin || '',
                 estado: (
-                  <span className={`badge bg-${getEstadoBadge(a.estado)}`}>
-                    {a.estado}
+                  <span className={`badge bg-${getEstadoBadge(a.estatus)}`}>
+                    {a.estatus}
                   </span>
                 )
               }))}
@@ -189,22 +216,22 @@ export default function DashboardAlumno() {
                 required
               ></textarea>
             </div>
-            <div className="mb-3">
-              <label className="form-label">Fecha Preferida</label>
-              <input
-                type="date"
-                className="form-control"
-                value={formData.solicitud.fecha || ''}
-                onChange={(e) =>
-                  setFormData({
-                    solicitud: { ...formData.solicitud, fecha: e.target.value }
-                  })
-                }
-                required
-              />
-            </div>
-            <div className="row mb-3">
-              <div className="col">
+            <div className="row g-2 mb-3">
+              <div className="col-6">
+                <label className="form-label">Fecha Preferida</label>
+                <input
+                  type="date"
+                  className="form-control"
+                  value={formData.solicitud.fecha || ''}
+                  onChange={(e) =>
+                    setFormData({
+                      solicitud: { ...formData.solicitud, fecha: e.target.value }
+                    })
+                  }
+                  required
+                />
+              </div>
+              <div className="col-3">
                 <label className="form-label">Hora Inicio</label>
                 <input
                   type="time"
@@ -218,7 +245,7 @@ export default function DashboardAlumno() {
                   required
                 />
               </div>
-              <div className="col">
+              <div className="col-3">
                 <label className="form-label">Hora Fin</label>
                 <input
                   type="time"

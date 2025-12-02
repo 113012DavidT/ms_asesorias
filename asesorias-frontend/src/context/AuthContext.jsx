@@ -11,25 +11,52 @@ export const AuthProvider = ({ children }) => {
 
   // Cargar usuario y token del localStorage al iniciar
   useEffect(() => {
-    const storedToken = localStorage.getItem('token');
-    const storedUser = localStorage.getItem('user');
-    
-    if (storedToken && storedUser) {
-      setToken(storedToken);
-      const userData = JSON.parse(storedUser);
-      
-      // Intentar obtener rol del JWT si no viene en la respuesta
-      if (!userData.rolNombre || userData.rolNombre === 'null') {
-        const decoded = decodeJWT(storedToken);
-        // El backend firma el claim como 'rol', no 'rolNombre'
-        if (decoded && decoded.rol) {
-          userData.rolNombre = decoded.rol;
+    const bootstrap = async () => {
+      const storedToken = localStorage.getItem('token');
+      const storedUser = localStorage.getItem('user');
+
+      if (storedToken && storedUser) {
+        setToken(storedToken);
+        const userData = JSON.parse(storedUser);
+
+        // Intentar obtener rol del JWT si no viene en la respuesta
+        if (!userData.rolNombre || userData.rolNombre === 'null') {
+          const decoded = decodeJWT(storedToken);
+          // El backend firma el claim como 'rol', no 'rolNombre'
+          if (decoded && decoded.rol) {
+            userData.rolNombre = decoded.rol;
+          }
         }
+
+        // Validar el token con el backend; si no es válido, limpiar y enviar a login
+        try {
+          const res = await axios.post('/api/auth/validate', { token: storedToken });
+          if (!res.data?.valid) {
+            localStorage.removeItem('token');
+            localStorage.removeItem('refreshToken');
+            localStorage.removeItem('user');
+            setUser(null);
+            setToken(null);
+            window.location.href = '/';
+            return;
+          }
+        } catch (_) {
+          // En caso de error de red/validación, forzar relogin para garantizar cabeceras válidas
+          localStorage.removeItem('token');
+          localStorage.removeItem('refreshToken');
+          localStorage.removeItem('user');
+          setUser(null);
+          setToken(null);
+          window.location.href = '/';
+          return;
+        }
+
+        setUser(userData);
       }
-      
-      setUser(userData);
-    }
-    setLoading(false);
+      setLoading(false);
+    };
+
+    bootstrap();
   }, []);
 
   const login = async (correoMatricula, password) => {
@@ -39,7 +66,7 @@ export const AuthProvider = ({ children }) => {
         password
       });
       
-      console.log('Login response:', res.data); // DEBUG
+      // DEBUG logs removidos
       
       // Evitar sombra de parámetros (correoMatricula) y conflictos de scope al destructurar
       const {
@@ -60,7 +87,7 @@ export const AuthProvider = ({ children }) => {
       // Si rolNombre no viene o es null, intentar extraerlo del JWT (claim 'rol')
       if (!rolNombre || rolNombre === 'null') {
         const decoded = decodeJWT(token);
-        console.log('JWT Decoded:', decoded); // DEBUG
+        // DEBUG logs removidos
         rolNombre = decoded?.rol || null; // NO usar fallback ADMIN inseguro
       }
       
@@ -87,7 +114,7 @@ export const AuthProvider = ({ children }) => {
       setToken(token);
       setUser(userData_completo);
       
-      console.log('User saved:', userData_completo); // DEBUG
+      // DEBUG logs removidos
       
       return { success: true, rolNombre };
     } catch (error) {

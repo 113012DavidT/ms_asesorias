@@ -23,7 +23,7 @@ export default function Login() {
     try {
       const result = await login(correoMatricula, password);
       
-      console.log('Login result:', result); // DEBUG
+      // DEBUG logs removidos
       
       if (result.success) {
         Swal.fire('Éxito', 'Sesión iniciada correctamente', 'success');
@@ -37,7 +37,6 @@ export default function Login() {
         };
         
         const targetRoute = roleRoutes[result.rolNombre] || '/';
-        console.log('Redirigiendo a:', targetRoute, 'Rol:', result.rolNombre); // DEBUG
         
         navigate(targetRoute);
       } else {
@@ -102,25 +101,7 @@ export default function Login() {
           </button>
         </form>
 
-        <div className="credentials-info">
-          <h5>📋 Credenciales de Prueba</h5>
-          <div className="credential-item">
-            <strong>Admin:</strong>
-            <p>admin@uteq.edu / pass123</p>
-          </div>
-          <div className="credential-item">
-            <strong>Coordinador:</strong>
-            <p>coordinador1@uteq.edu / pass123</p>
-          </div>
-          <div className="credential-item">
-            <strong>Profesor:</strong>
-            <p>profesor1@uteq.edu / pass123</p>
-          </div>
-          <div className="credential-item">
-            <strong>Alumno:</strong>
-            <p>alumno1@uteq.edu / pass123</p>
-          </div>
-        </div>
+        {/* Se eliminó el bloque de credenciales de prueba para una UI más limpia */}
       </div>
     </div>
   );

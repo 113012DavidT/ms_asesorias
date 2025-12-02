@@ -1,6 +1,19 @@
 version: '3.8'
 
 services:
+  postgres:
+    image: postgres:16
+    container_name: asesorias-postgres
+    environment:
+      POSTGRES_USER: root
+      POSTGRES_PASSWORD: root_pass
+    ports:
+      - "5432:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+      - ./init.sql:/docker-entrypoint-initdb.d/init.sql:ro
+    networks:
+      - asesorias-network
   eureka-server:
     build:
       context: ./eureka-server
@@ -58,6 +71,11 @@ services:
     environment:
       EUREKA_CLIENT_SERVICE_URL_DEFAULT_ZONE: http://eureka-server:8761/eureka/
       SPRING_APPLICATION_NAME: ms-admin
+      DB_HOST: asesorias-postgres
+      DB_PORT: 5432
+      DB_NAME: asesoriasdb
+      DB_USER: admin
+      DB_PASSWORD: admin_pass
     networks:
       - asesorias-network
 
@@ -73,6 +91,11 @@ services:
     environment:
       EUREKA_CLIENT_SERVICE_URL_DEFAULT_ZONE: http://eureka-server:8761/eureka/
       SPRING_APPLICATION_NAME: ms-asesorias
+      DB_HOST: asesorias-postgres
+      DB_PORT: 5432
+      DB_NAME: asesoriasdb
+      DB_USER: asesorias
+      DB_PASSWORD: asesorias_pass
     networks:
       - asesorias-network
 
@@ -88,6 +111,11 @@ services:
     environment:
       EUREKA_CLIENT_SERVICE_URL_DEFAULT_ZONE: http://eureka-server:8761/eureka/
       SPRING_APPLICATION_NAME: ms-coordinadores
+      DB_HOST: asesorias-postgres
+      DB_PORT: 5432
+      DB_NAME: asesoriasdb
+      DB_USER: coordinadores
+      DB_PASSWORD: coordinadores_pass
     networks:
       - asesorias-network
 
@@ -103,6 +131,11 @@ services:
     environment:
       EUREKA_CLIENT_SERVICE_URL_DEFAULT_ZONE: http://eureka-server:8761/eureka/
       SPRING_APPLICATION_NAME: ms-divisiones
+      DB_HOST: asesorias-postgres
+      DB_PORT: 5432
+      DB_NAME: asesoriasdb
+      DB_USER: divisiones
+      DB_PASSWORD: divisiones_pass
     networks:
       - asesorias-network
 
@@ -118,6 +151,11 @@ services:
     environment:
       EUREKA_CLIENT_SERVICE_URL_DEFAULT_ZONE: http://eureka-server:8761/eureka/
       SPRING_APPLICATION_NAME: ms-profesores
+      DB_HOST: asesorias-postgres
+      DB_PORT: 5432
+      DB_NAME: asesoriasdb
+      DB_USER: profesores
+      DB_PASSWORD: profesores_pass
     networks:
       - asesorias-network
 
@@ -133,9 +171,16 @@ services:
     environment:
       EUREKA_CLIENT_SERVICE_URL_DEFAULT_ZONE: http://eureka-server:8761/eureka/
       SPRING_APPLICATION_NAME: ms-alumnos
+      DB_HOST: asesorias-postgres
+      DB_PORT: 5432
+      DB_NAME: asesoriasdb
+      DB_USER: alumnos
+      DB_PASSWORD: alumnos_pass
     networks:
       - asesorias-network
 
 networks:
   asesorias-network:
     driver: bridge
+volumes:
+  pgdata:

@@ -1,6 +1,7 @@
 package com.uteq.asesorias.controller;
 
 import com.uteq.asesorias.entity.Asesoria;
+import com.fasterxml.jackson.annotation.JsonFormat;
 import com.uteq.asesorias.service.AsesoriaService;
 import lombok.Data;
 import lombok.RequiredArgsConstructor;
@@ -32,11 +33,14 @@ public class AsesoriaController {
 
     @PostMapping("/profesor")
     public ResponseEntity<Asesoria> crearPorProfesor(@RequestBody CrearAsesoriaPorProfesorReq req) {
+        LocalTime horaInicio = req.getHoraInicio() != null ? req.getHoraInicio() : req.getHora();
         return ResponseEntity.status(HttpStatus.CREATED).body(service.crearPorProfesor(
                 req.getProfesorId(),
                 req.getAlumnoId(),
                 req.getFecha(),
-                req.getHora(),
+                horaInicio,
+                req.getHoraFin(),
+                req.getTitulo(),
                 req.getMateria(),
                 req.getObservaciones()
         ));
@@ -53,8 +57,14 @@ public class AsesoriaController {
     }
 
     @GetMapping("/profesor/{profesorId}")
-    public ResponseEntity<List<Asesoria>> porProfesor(@PathVariable Long profesorId) {
-        return ResponseEntity.ok(service.porProfesor(profesorId));
+    public ResponseEntity<List<Asesoria>> porProfesor(@PathVariable Long profesorId,
+                                                      @RequestParam(value = "estatus", required = false) String estatus) {
+        List<Asesoria> lista = service.porProfesor(profesorId);
+        if (estatus != null && !estatus.isBlank()) {
+            String es = estatus.toUpperCase();
+            lista = lista.stream().filter(a -> es.equalsIgnoreCase(a.getEstatus())).toList();
+        }
+        return ResponseEntity.ok(lista);
     }
 
     @GetMapping("/alumno/{alumnoId}")
@@ -91,6 +101,13 @@ public class AsesoriaController {
         return ResponseEntity.ok(service.cambiarEstatus(id, nuevoEstatus));
     }
 
+    @PutMapping("/{id}/asignar/{disponibilidadId}")
+    public ResponseEntity<Asesoria> asignar(
+            @PathVariable Long id,
+            @PathVariable Long disponibilidadId) {
+        return ResponseEntity.ok(service.asignarDisponibilidad(id, disponibilidadId));
+    }
+
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> eliminar(@PathVariable Long id) {
         service.eliminar(id);
@@ -110,8 +127,15 @@ public class AsesoriaController {
     public static class CrearAsesoriaPorProfesorReq {
         private Long profesorId;
         private Long alumnoId;
+        @JsonFormat(pattern = "yyyy-MM-dd")
         private LocalDate fecha;
-        private LocalTime hora;
+        @JsonFormat(pattern = "HH:mm")
+        private LocalTime hora;       // compat: horaInicio
+        @JsonFormat(pattern = "HH:mm")
+        private LocalTime horaInicio; // nuevo
+        @JsonFormat(pattern = "HH:mm")
+        private LocalTime horaFin;    // nuevo
+        private String titulo;        // nuevo
         private String materia;
         private String observaciones;
     }

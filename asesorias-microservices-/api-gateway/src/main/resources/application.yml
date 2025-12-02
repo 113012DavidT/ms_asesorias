@@ -11,6 +11,8 @@ spring:
     gateway:
       default-filters:
         - DedupeResponseHeader=Access-Control-Allow-Origin Access-Control-Allow-Credentials RETAIN_FIRST
+        # Validación JWT global (usa el nombre exacto de la clase que extiende AbstractGatewayFilterFactory)
+        - JwtAuthenticationFilter
       # 🌍 Configuración Global de CORS (para permitir peticiones desde el frontend)
       globalcors:
         add-to-simple-url-handler-mapping: true
@@ -70,7 +72,7 @@ spring:
         - id: ms-profesores
           uri: lb://ms-profesores
           predicates:
-            - Path=/api/profesores/**
+            - Path=/api/profesores/**,/api/grupos/**
           filters:
             - StripPrefix=0
 

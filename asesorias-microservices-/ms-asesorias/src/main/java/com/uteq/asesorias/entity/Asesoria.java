@@ -22,8 +22,11 @@ public class Asesoria {
     private Long disponibilidadId;
 
     private LocalDate fecha;
-    private LocalTime hora;
+    private LocalTime hora;        // compatibilidad: igual a horaInicio
+    private LocalTime horaInicio;
+    private LocalTime horaFin;
 
+    private String titulo;
     private String materia;
     private String observaciones;
     private String estatus;

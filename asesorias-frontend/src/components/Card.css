@@ -16,15 +16,15 @@
 }
 
 .card-header {
-  background: #f8f9fa;
-  padding: 15px;
+  background: #ffffff;
+  padding: 12px 15px;
   border-bottom: 1px solid #dee2e6;
   font-weight: 600;
   color: #333;
 }
 
 .card-body {
-  padding: 15px;
+  padding: 12px 15px;
 }
 
 .card-footer {

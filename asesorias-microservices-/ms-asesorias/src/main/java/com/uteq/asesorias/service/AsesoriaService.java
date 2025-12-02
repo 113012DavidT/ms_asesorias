@@ -9,7 +9,9 @@ import java.util.Optional;
 public interface AsesoriaService {
     // Creación
     Asesoria crear(Long profesorId, Long alumnoId, Long disponibilidadId, String materia, String observaciones);
-    Asesoria crearPorProfesor(Long profesorId, Long alumnoId, LocalDate fecha, LocalTime hora, String materia, String observaciones);
+    Asesoria crearPorProfesor(Long profesorId, Long alumnoId, LocalDate fecha,
+                              LocalTime horaInicio, LocalTime horaFin,
+                              String titulo, String materia, String observaciones);
     
     // Lectura
     List<Asesoria> porProfesor(Long profesorId);
@@ -20,6 +22,7 @@ public interface AsesoriaService {
     // Actualización
     Asesoria actualizar(Long id, Asesoria asesoria);
     Asesoria cambiarEstatus(Long id, String nuevoEstatus);
+    Asesoria asignarDisponibilidad(Long id, Long disponibilidadId);
     
     // Eliminación
     void eliminar(Long id);

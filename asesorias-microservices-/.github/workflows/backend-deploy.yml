@@ -1,0 +1,99 @@
+name: Backend Build & Deploy
+
+on:
+  push:
+    branches: [ main ]
+  workflow_dispatch:
+
+env:
+  ACR_NAME: acrasesorias            # Cambia por tu registro real
+  RESOURCE_GROUP: rg-asesorias      # Ajusta si es diferente
+  LOCATION: eastus
+  CONTAINERAPPS_ENV: env-asesorias  # Nombre del entorno Container Apps
+
+jobs:
+  build-and-push:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      id-token: write   # Para OIDC Azure login
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Azure Login (OIDC)
+        uses: azure/login@v2
+        with:
+          client-id: ${{ secrets.AZURE_CLIENT_ID }}
+          tenant-id: ${{ secrets.AZURE_TENANT_ID }}
+          subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+
+      - name: Set up Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: '21'
+          cache: 'maven'
+
+      - name: Build all microservices (skip tests)
+        working-directory: asesorias-microservices-
+        run: mvn -q -DskipTests package
+
+      - name: ACR Login
+        run: az acr login --name $ACR_NAME
+
+      - name: Build & Push Images
+        working-directory: asesorias-microservices-
+        run: |
+          REG="${ACR_NAME}.azurecr.io"
+          declare -A PORTS=( 
+            [eureka-server]=8761 
+            [api-gateway]=8000 
+            [ms-auth]=8088 
+            [ms-admin]=8091 
+            [ms-asesorias]=8082 
+            [ms-coordinadores]=8083 
+            [ms-divisiones]=8084 
+            [ms-profesores]=8085 
+            [ms-alumnos]=8086 )
+          for SVC in "${!PORTS[@]}"; do
+            echo "Building $SVC"
+            docker build -t "$REG/$SVC:latest" -t "$REG/$SVC:${GITHUB_SHA::7}" ./$SVC
+            docker push "$REG/$SVC:latest"
+            docker push "$REG/$SVC:${GITHUB_SHA::7}"
+          done
+
+      - name: List Images
+        run: az acr repository list -n $ACR_NAME -o table
+
+  update-container-apps:
+    needs: build-and-push
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/main'
+    permissions:
+      contents: read
+      id-token: write
+    steps:
+      - name: Azure Login (OIDC)
+        uses: azure/login@v2
+        with:
+          client-id: ${{ secrets.AZURE_CLIENT_ID }}
+          tenant-id: ${{ secrets.AZURE_TENANT_ID }}
+          subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+
+      - name: Update Container Apps (rolling latest)
+        run: |
+          REG="${{ env.ACR_NAME }}.azurecr.io"
+          APPS=( eureka-server api-gateway ms-auth ms-admin ms-asesorias ms-coordinadores ms-divisiones ms-profesores ms-alumnos )
+          for APP in "${APPS[@]}"; do
+            echo "Updating $APP to latest"
+            az containerapp update \
+              --name $APP \
+              --resource-group ${{ env.RESOURCE_GROUP }} \
+              --image "$REG/$APP:latest" || echo "WARN: $APP aún no existe (crear manualmente la primera vez)"
+          done
+
+# NOTAS:
+# 1. La primera vez crea manualmente cada Container App (ver AZURE_DEPLOYMENT.md) o añade un job de 'create'.
+# 2. Añade secrets AZURE_CLIENT_ID, AZURE_TENANT_ID, AZURE_SUBSCRIPTION_ID en GitHub.
+# 3. Si quieres crear automáticamente apps faltantes, agrega comandos 'az containerapp create'.

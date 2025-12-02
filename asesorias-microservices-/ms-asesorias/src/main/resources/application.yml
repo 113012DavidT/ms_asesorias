@@ -5,15 +5,21 @@ spring:
     name: ms-asesorias
 
   datasource:
-    url: jdbc:h2:mem:ases_db
-    driverClassName: org.h2.Driver
-    username: sa
-    password:
+    url: jdbc:postgresql://${DB_HOST:${POSTGRES_HOST:localhost}}:${DB_PORT:5432}/${DB_NAME:asesoriasdb}
+    username: ${DB_USER:asesorias}
+    password: ${DB_PASSWORD:asesorias_pass}
+    driver-class-name: org.postgresql.Driver
+    hikari:
+      maximum-pool-size: 5
+      connection-timeout: 30000
 
   jpa:
     hibernate:
       ddl-auto: update
     show-sql: false
+    properties:
+      hibernate.default_schema: asesorias
+      hibernate.jdbc.time_zone: UTC
 
   main:
     allow-bean-definition-overriding: true

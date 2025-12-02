@@ -26,6 +26,8 @@ public class WebConfig implements WebMvcConfigurer {
             String path = request.getRequestURI();
             if (esPublica(path)) return true;
             String role = request.getHeader("X-User-Role");
+            if (role != null) role = role.trim();
+            org.slf4j.LoggerFactory.getLogger(RoleInterceptor.class).info("[ms-divisiones] path={}, X-User-Role={}, allowed={}", path, role, allowed);
             if (role == null || role.isBlank()) {response.sendError(401, "Falta X-User-Role"); return false;}
             if (!allowed.contains(role.toUpperCase())) {response.sendError(403, "Rol no autorizado"); return false;}
             return true;

@@ -12,6 +12,7 @@ public class WebConfig implements WebMvcConfigurer {
     private String allowedRolesCsv;
 
     private static class RoleInterceptor implements org.springframework.web.servlet.HandlerInterceptor {
+        private static final org.slf4j.Logger log = org.slf4j.LoggerFactory.getLogger(RoleInterceptor.class);
         private final java.util.Set<String> allowed;
         RoleInterceptor(String csv) {
             allowed = java.util.Arrays.stream(csv.split(","))
@@ -26,8 +27,30 @@ public class WebConfig implements WebMvcConfigurer {
             String path = request.getRequestURI();
             if (esPublica(path)) return true;
             String role = request.getHeader("X-User-Role");
-            if (role == null || role.isBlank()) {response.sendError(401, "Falta X-User-Role"); return false;}
-            if (!allowed.contains(role.toUpperCase())) {response.sendError(403, "Rol no autorizado"); return false;}
+            String method = request.getMethod();
+            log.info("[ms-alumnos] path={}, method={}, X-User-Role={}, allowed={}", path, method, role, allowed);
+            if (role == null || role.isBlank()) {
+                // Fallback: permitir GET cuando llega X-User-Id aunque falte el rol (para evitar romper UI)
+                String uid = request.getHeader("X-User-Id");
+                if ("GET".equalsIgnoreCase(method) && uid != null && !uid.isBlank()) {
+                    log.warn("[ms-alumnos] {} permitido por fallback: falta X-User-Role pero X-User-Id={} presente (path={})", method, uid, path);
+                    return true;
+                }
+                response.sendError(401, "Falta X-User-Role");
+                return false;
+            }
+            String roleUp = role.toUpperCase();
+            // Regla específica: permitir a PROFESOR hacer GET del listado básico de alumnos
+            if ("GET".equalsIgnoreCase(method) && "/api/alumnos".equals(path)) {
+                if ("PROFESOR".equals(roleUp) || allowed.contains(roleUp)) {
+                    log.info("[ms-alumnos] GET {} permitido para rol {} (regla específica listado)", path, roleUp);
+                    return true;
+                } else {
+                    response.sendError(403, "Rol no autorizado para listado de alumnos");
+                    return false;
+                }
+            }
+            if (!allowed.contains(roleUp)) {response.sendError(403, "Rol no autorizado"); return false;}
             return true;
         }
     }

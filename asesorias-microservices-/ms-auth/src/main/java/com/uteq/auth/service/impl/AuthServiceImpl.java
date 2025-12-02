@@ -58,6 +58,14 @@ public class AuthServiceImpl implements AuthService {
         try {
             if (jwtService.validarToken(token)) {
                 Claims claims = jwtService.obtenerClaimsDelToken(token);
+                // Rechazar explícitamente tokens de refresh en /validate
+                Object typeClaim = claims.get("type");
+                if (typeClaim != null && "refresh".equalsIgnoreCase(String.valueOf(typeClaim))) {
+                    return TokenValidationResponse.builder()
+                            .valid(false)
+                            .mensaje("Refresh token no permitido para validación")
+                            .build();
+                }
                 Long usuarioId = Long.parseLong(claims.getSubject());
                 String correoMatricula = (String) claims.get("correoMatricula");
                 String rolNombre = (String) claims.get("rol");

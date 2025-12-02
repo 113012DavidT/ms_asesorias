@@ -2,8 +2,11 @@ import axios from 'axios';
 
 // Usar siempre el API Gateway para centralizar auth y routing
 // Usamos directamente el API Gateway para evitar inconsistencias del proxy.
+// Permitir configurar la URL del API en despliegue (Vite env)
+const API_BASE = import.meta?.env?.VITE_API_BASE_URL || 'http://localhost:8000';
+
 const instance = axios.create({
-  baseURL: 'http://localhost:8000',
+  baseURL: API_BASE,
   headers: { 'Content-Type': 'application/json' },
   withCredentials: false
 });
@@ -11,9 +14,28 @@ const instance = axios.create({
 // Interceptor para agregar el token a todas las requests
 instance.interceptors.request.use(
   (config) => {
-    const token = localStorage.getItem('token');
+    // Obtener token desde localStorage, con fallback al objeto user
+    let token = localStorage.getItem('token');
+    if (!token) {
+      try {
+        const userRaw = localStorage.getItem('user');
+        if (userRaw) {
+          const userObj = JSON.parse(userRaw);
+          token = userObj?.token || null;
+        }
+      } catch (_) {
+        // Ignorar errores de parseo
+      }
+    }
     if (token) {
       config.headers.Authorization = `Bearer ${token}`;
+    } else {
+      // Aviso útil para depurar 401 por falta de token
+      // Nota: no bloquea la request; el Gateway responderá 401 si es requerida auth
+      // Puedes comentar esta línea si no deseas logs en consola
+      if (typeof window !== 'undefined') {
+        console.warn('[axios] No se encontró token para la petición', config.method, config.url);
+      }
     }
     return config;
   },

@@ -1,5 +1,6 @@
 $headers = @{"Content-Type"="application/json"}
-$body = ConvertTo-Json @{correoMatricula="admin@uteq.edu"; password="admin123"}
+# ms-auth espera 'correoMatricula' y devuelve 'token' (no 'accessToken')
+$body = ConvertTo-Json @{correoMatricula="admin@uteq.edu"; password="pass123"}
 
 Write-Host "Testing ms-auth direct on port 8088..."
 try {
@@ -12,7 +13,8 @@ try {
     Write-Host "Status: $($response.StatusCode)"
     if ($response.StatusCode -eq 200) {
         $data = $response.Content | ConvertFrom-Json
-        Write-Host "SUCCESS: Nombre=$($data.nombre), Rol=$($data.rolNombre)"
+        $tok = $data.token
+        Write-Host "SUCCESS: Nombre=$($data.nombre), Rol=$($data.rolNombre), TokenLen=$($tok.Length)"
     }
 }
 catch [System.Net.WebException] {
@@ -33,7 +35,8 @@ try {
     Write-Host "Status: $($response.StatusCode)"
     if ($response.StatusCode -eq 200) {
         $data = $response.Content | ConvertFrom-Json
-        Write-Host "SUCCESS: Nombre=$($data.nombre), Rol=$($data.rolNombre)"
+        $tok = $data.token
+        Write-Host "SUCCESS: Nombre=$($data.nombre), Rol=$($data.rolNombre), TokenLen=$($tok.Length)"
     }
 }
 catch [System.Net.WebException] {

@@ -52,8 +52,8 @@ html, body, #root {
 }
 
 .form-control:focus, .form-select:focus {
-  border-color: #667eea;
-  box-shadow: 0 0 0 0.2rem rgba(102, 126, 234, 0.25);
+  border-color: #0d6efd;
+  box-shadow: 0 0 0 0.2rem rgba(13, 110, 253, 0.25);
 }
 
 .badge {
@@ -173,19 +173,19 @@ html, body, #root {
 
 /* Gradient backgrounds */
 .bg-gradient-primary {
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: linear-gradient(135deg, #0d6efd 0%, #3a86ff 100%);
 }
 
 .bg-gradient-success {
-  background: linear-gradient(135deg, #84fab0 0%, #8fd3f4 100%);
+  background: linear-gradient(135deg, #4cd964 0%, #2ecc71 100%);
 }
 
 .bg-gradient-danger {
-  background: linear-gradient(135deg, #fa709a 0%, #fee140 100%);
+  background: linear-gradient(135deg, #ff4d4f 0%, #ff6b6b 100%);
 }
 
 .bg-gradient-warning {
-  background: linear-gradient(135deg, #ffecd2 0%, #fcb69f 100%);
+  background: linear-gradient(135deg, #ffd166 0%, #fca311 100%);
 }
 
 /* Shadow utilities */

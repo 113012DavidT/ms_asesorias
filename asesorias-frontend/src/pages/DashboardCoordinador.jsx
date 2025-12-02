@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { Layout } from '../components/Layout';
 import { Card } from '../components/Card';
 import { Table } from '../components/Table';
@@ -8,6 +8,8 @@ import { useAuth } from '../hooks/useAuth';
 import Swal from 'sweetalert2';
 import { FiUsers, FiBook, FiEdit2 } from 'react-icons/fi';
 import './Dashboard.css';
+import axios from '../api/axiosConfig';
+import { AssignmentModal } from '../components/AssignmentModal';
 
 export default function DashboardCoordinador() {
   const { user } = useAuth();
@@ -19,11 +21,16 @@ export default function DashboardCoordinador() {
   const alumnosAPI = useFetch('/api/alumnos');
   const divisionesAPI = useFetch('/api/divisiones');
   const programasAPI = useFetch('/api/programas');
+  const usuariosAPI = useFetch('/api/admin/usuarios');
 
   const [formData, setFormData] = useState({
     profesor: {},
     alumno: {}
   });
+
+  // Estado para asignaciones
+  const [showAssign, setShowAssign] = useState(false);
+  const [loadingAssign, setLoadingAssign] = useState(false);
 
   useEffect(() => {
     cargarDatos();
@@ -36,8 +43,45 @@ export default function DashboardCoordinador() {
       } else if (activeTab === 'alumnos') {
         await alumnosAPI.get();
       }
+      // Datos base para asignaciones (lazy cuando se abre el modal)
     } catch (error) {
       Swal.fire('Error', 'No se pudieron cargar los datos', 'error');
+    }
+  };
+
+  const openAssignModal = async () => {
+    try {
+      setLoadingAssign(true);
+      await Promise.all([
+        divisionesAPI.get(),
+        programasAPI.get(),
+        usuariosAPI.get()
+      ]);
+      setShowAssign(true);
+    } finally {
+      setLoadingAssign(false);
+    }
+  };
+
+  const doAsignarProfesores = async ({ divisionId, programaId, usuarioIds }) => {
+    try {
+      await axios.post('/api/profesores/asignar', { divisionId, programaId, usuarioIds });
+      Swal.fire('Éxito', 'Profesores asignados correctamente', 'success');
+      await profesoresAPI.get();
+    } catch (e) {
+      Swal.fire('Error', e?.response?.data?.message || 'No se pudieron asignar profesores', 'error');
+      throw e;
+    }
+  };
+
+  const doAsignarAlumnos = async ({ divisionId, programaId, usuarioIds }) => {
+    try {
+      await axios.post('/api/alumnos/asignar', { divisionId, programaId, usuarioIds });
+      Swal.fire('Éxito', 'Alumnos asignados correctamente', 'success');
+      await alumnosAPI.get();
+    } catch (e) {
+      Swal.fire('Error', e?.response?.data?.message || 'No se pudieron asignar alumnos', 'error');
+      throw e;
     }
   };
 
@@ -113,8 +157,29 @@ export default function DashboardCoordinador() {
           >
             + Agregar
           </button>
+          <button
+            className="btn btn-outline-success ms-2"
+            onClick={openAssignModal}
+            title={activeTab === 'profesores' ? 'Asignar profesores a división/programa' : 'Asignar alumnos a división/programa'}
+            disabled={loadingAssign}
+          >
+            {loadingAssign ? 'Cargando...' : (activeTab === 'profesores' ? 'Asignar Profesores' : 'Asignar Alumnos')}
+          </button>
         </div>
-
+        {/* MODAL DE ASIGNACIÓN (UX mejorado) */}
+        <AssignmentModal
+          isOpen={showAssign}
+          onClose={() => setShowAssign(false)}
+          divisiones={divisionesAPI.data || []}
+          programas={programasAPI.data || []}
+          usuarios={usuariosAPI.data || []}
+          loading={divisionesAPI.loading || programasAPI.loading || usuariosAPI.loading}
+          onAsignarProfesores={doAsignarProfesores}
+          onAsignarAlumnos={doAsignarAlumnos}
+          mode={activeTab === 'profesores' ? 'PROFESORES' : 'ALUMNOS'}
+          assignedProfesorUsuarioIds={(profesoresAPI.data || []).map(p => p.usuarioId)}
+          assignedAlumnoUsuarioIds={(alumnosAPI.data || []).map(a => a.usuarioId)}
+        />
         {/* PROFESORES */}
         {activeTab === 'profesores' && (
           <Card title="Gestión de Profesores">

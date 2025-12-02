@@ -13,6 +13,7 @@ import java.time.LocalTime;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import feign.FeignException;
 
 @Service
 @RequiredArgsConstructor
@@ -25,19 +26,23 @@ public class AsesoriaServiceImpl implements AsesoriaService {
     @Override
     public Asesoria crear(Long profesorId, Long alumnoId, Long disponibilidadId, String materia, String observaciones) {
         // 1️⃣ Validar perfiles: mismo programa
-        Map<String, Object> profPerfil = admin.perfilProfesor(profesorId);
-        Map<String, Object> alumPerfil = admin.perfilAlumno(alumnoId);
+        Map<String, Object> profPerfil;
+        Map<String, Object> alumPerfil;
+        try {
+            profPerfil = admin.perfilProfesor(profesorId);
+            alumPerfil = admin.perfilAlumno(alumnoId);
+        } catch (FeignException e) {
+            throw new IllegalArgumentException("No se pudo obtener perfiles en ms-admin: " + e.status());
+        }
 
         if (profPerfil == null || alumPerfil == null)
-            throw new RuntimeException("Perfiles no encontrados");
+            throw new IllegalArgumentException("Perfiles no encontrados");
 
-        Long profPrograma = profPerfil.get("programaId") == null ? null :
-                Long.valueOf(profPerfil.get("programaId").toString());
-        Long alumPrograma = alumPerfil.get("programaId") == null ? null :
-                Long.valueOf(alumPerfil.get("programaId").toString());
+        Long profPrograma = extraerProgramaId(profPerfil);
+        Long alumPrograma = extraerProgramaId(alumPerfil);
 
         if (profPrograma == null || alumPrograma == null || !profPrograma.equals(alumPrograma))
-            throw new RuntimeException("Alumno y Profesor no pertenecen al mismo programa");
+            throw new IllegalArgumentException("Alumno y Profesor no pertenecen al mismo programa");
 
         // 2️⃣ Validar disponibilidad
         Disponibilidad d = dispRepo.findById(disponibilidadId)
@@ -58,7 +63,10 @@ public class AsesoriaServiceImpl implements AsesoriaService {
                 .alumnoId(alumnoId)
                 .disponibilidadId(disponibilidadId)
                 .fecha(d.getFecha())
-                .hora(d.getHoraInicio())
+            .hora(d.getHoraInicio())
+            .horaInicio(d.getHoraInicio())
+            .horaFin(d.getHoraFin())
+            .titulo(materia)
                 .materia(materia)
                 .observaciones(observaciones)
                 .estatus("CREADA")
@@ -70,43 +78,39 @@ public class AsesoriaServiceImpl implements AsesoriaService {
 
     @Override
     public Asesoria crearPorProfesor(Long profesorId, Long alumnoId,
-                                     LocalDate fecha, LocalTime hora,
-                                     String materia, String observaciones) {
+                                     LocalDate fecha, LocalTime horaInicio, LocalTime horaFin,
+                                     String titulo, String materia, String observaciones) {
 
-        // 1️⃣ Validar perfiles
-        Map<String, Object> profPerfil = admin.perfilProfesor(profesorId);
-        Map<String, Object> alumPerfil = admin.perfilAlumno(alumnoId);
+        // 1️⃣ Validar perfiles (tolerante): si no se puede obtener o faltan programas, permitimos continuar
+        try {
+            Map<String, Object> profPerfil = admin.perfilProfesor(profesorId);
+            Map<String, Object> alumPerfil = admin.perfilAlumno(alumnoId);
+            Long profPrograma = extraerProgramaId(profPerfil);
+            Long alumPrograma = extraerProgramaId(alumPerfil);
+            if (profPrograma != null && alumPrograma != null && !profPrograma.equals(alumPrograma)) {
+                throw new IllegalArgumentException("Alumno y Profesor no pertenecen al mismo programa");
+            }
+        } catch (FeignException e) {
+            // Continuar sin bloquear la solicitud; el profesor podrá revisar/aceptar
+        } catch (IllegalArgumentException ex) {
+            throw ex;
+        } catch (Exception ignored) {
+            // Cualquier otro caso: continuar
+        }
 
-        if (profPerfil == null || alumPerfil == null)
-            throw new RuntimeException("Perfiles no encontrados");
-
-        Long profPrograma = profPerfil.get("programaId") == null ? null :
-                Long.valueOf(profPerfil.get("programaId").toString());
-        Long alumPrograma = alumPerfil.get("programaId") == null ? null :
-                Long.valueOf(alumPerfil.get("programaId").toString());
-
-        if (profPrograma == null || alumPrograma == null || !profPrograma.equals(alumPrograma))
-            throw new RuntimeException("Alumno y Profesor no pertenecen al mismo programa");
-
-        // 2️⃣ Buscar disponibilidad activa del profesor en esa fecha/hora
-        Disponibilidad disp = dispRepo
-                .findByProfesorIdAndFechaAndHoraInicioLessThanEqualAndHoraFinGreaterThanEqualAndDisponibleTrue(
-                        profesorId, fecha, hora, hora)
-                .orElseThrow(() -> new RuntimeException("No hay disponibilidad activa en esa fecha y hora"));
-
-        // 3️⃣ Crear asesoría y marcar disponibilidad ocupada
-        disp.setDisponible(false);
-        dispRepo.save(disp);
-
+        // 2️⃣ Crear solicitud libre (sin exigir disponibilidad), queda en PENDIENTE para revisión
         Asesoria nueva = Asesoria.builder()
                 .profesorId(profesorId)
                 .alumnoId(alumnoId)
-                .disponibilidadId(disp.getId())
+                .disponibilidadId(null)
                 .fecha(fecha)
-                .hora(hora)
+            .hora(horaInicio)
+            .horaInicio(horaInicio)
+            .horaFin(horaFin)
+            .titulo(titulo != null && !titulo.isBlank() ? titulo : materia)
                 .materia(materia)
                 .observaciones(observaciones)
-                .estatus("ASIGNADA")
+                .estatus("PENDIENTE")
                 .fechaRegistro(LocalDate.now())
                 .build();
 
@@ -154,6 +158,36 @@ public class AsesoriaServiceImpl implements AsesoriaService {
     }
 
     @Override
+    public Asesoria asignarDisponibilidad(Long id, Long disponibilidadId) {
+        Asesoria asesoria = repo.findById(id)
+                .orElseThrow(() -> new RuntimeException("Asesoría no encontrada"));
+
+        Disponibilidad disp = dispRepo.findById(disponibilidadId)
+                .orElseThrow(() -> new RuntimeException("Disponibilidad no encontrada"));
+
+        if (!Boolean.TRUE.equals(disp.getDisponible()))
+            throw new IllegalArgumentException("La disponibilidad ya está ocupada");
+
+        if (asesoria.getProfesorId() != null && !asesoria.getProfesorId().equals(disp.getProfesorId()))
+            throw new IllegalArgumentException("La disponibilidad no corresponde al profesor de la asesoría");
+
+        // Asignar datos de la disponibilidad a la asesoría
+        asesoria.setProfesorId(disp.getProfesorId());
+        asesoria.setDisponibilidadId(disp.getId());
+        asesoria.setFecha(disp.getFecha());
+        asesoria.setHora(disp.getHoraInicio());
+        asesoria.setHoraInicio(disp.getHoraInicio());
+        asesoria.setHoraFin(disp.getHoraFin());
+        asesoria.setEstatus("PROGRAMADA");
+
+        // Marcar disponibilidad como ocupada
+        disp.setDisponible(false);
+        dispRepo.save(disp);
+
+        return repo.save(asesoria);
+    }
+
+    @Override
     public void eliminar(Long id) {
         repo.deleteById(id);
     }
@@ -171,6 +205,22 @@ public class AsesoriaServiceImpl implements AsesoriaService {
     @Override
     public List<Asesoria> porProfesorYFecha(Long profesorId, LocalDate fecha) {
         return repo.findByProfesorIdAndFecha(profesorId, fecha);
+    }
+
+    private Long extraerProgramaId(Map<String, Object> perfil) {
+        if (perfil == null) return null;
+        Object programaId = perfil.get("programaId");
+        if (programaId != null) {
+            try { return Long.valueOf(programaId.toString()); } catch (NumberFormatException ignored) {}
+        }
+        Object programaObj = perfil.get("programa");
+        if (programaObj instanceof Map<?, ?> m) {
+            Object id = m.get("id");
+            if (id != null) {
+                try { return Long.valueOf(id.toString()); } catch (NumberFormatException ignored) {}
+            }
+        }
+        return null;
     }
 }
 
